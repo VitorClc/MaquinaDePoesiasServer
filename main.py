@@ -9,13 +9,35 @@ app = socketio.WSGIApp(sio, static_files={
 
 @sio.on('cpfValidation')
 def my_message(sid, data):
-    with open('data.json', 'r') as fp:
-        obj = json.load(fp)
+    with open('data.json', 'r') as file:
+        obj = json.load(file)
         for dict in obj:
             if dict['cpf'] == data:
                 sio.emit("cpfResponse", False)
             else:
                 sio.emit("cpfResponse", True)
+
+@sio.on('saveData')
+def writeData(sid, data):
+    receivedData = {
+        "cpf": data[0],
+        "name": data[1],
+        "email": data[2],
+        "phone": data[3],
+        "ans1": data[4],
+        "ans2": data[5],
+        "ans3": data[6],
+        "ans4": data[7],
+        "ans5": data[8]
+    }
+
+    with open('data.json') as f:
+        obj = json.load(f)
+        obj.append(receivedData)
+        with open('data.json', 'w') as outfile:
+            json.dump(obj, outfile)
+        
+        sio.emit("finished", True)
 
 if __name__ == '__main__':
     eventlet.wsgi.server(eventlet.listen(('', 8081)), app)
