@@ -7,15 +7,25 @@ app = socketio.WSGIApp(sio, static_files={
     '/': {'content_type': 'text/html', 'filename': 'index.html'}
 })
 
+
 @sio.on('cpfValidation')
 def my_message(sid, data):
+    foundCPF = False
     with open('data.json', 'r') as file:
         obj = json.load(file)
         for dict in obj:
             if dict['cpf'] == data:
-                sio.emit("cpfResponse", False)
+                print("bbbb")
+                foundCPF = True
             else:
-                sio.emit("cpfResponse", True)
+                print("aa")
+    
+    file.close()
+
+    if(foundCPF == False):
+        sio.emit("cpfResponse", True)
+    else:
+        sio.emit("cpfResponse", False)
 
 @sio.on('saveData')
 def writeData(sid, data):
@@ -38,6 +48,8 @@ def writeData(sid, data):
             json.dump(obj, outfile)
         
         sio.emit("finished", True)
+        outfile.close()
+    f.close()
 
 if __name__ == '__main__':
     eventlet.wsgi.server(eventlet.listen(('', 8081)), app)
